@@ -1,0 +1,46 @@
+/*
+ * Gradle project to upload Android NDK native library symbols to Firebase Crashlytics.
+ * 
+ * Example invocation:
+ * ./gradlew uploadCrashlyticsSymbolFileRelease -PapplicationId=com.example.app -PunstrippedNativeLibsDir=/path/to/unstripped-native-libs
+ */
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.2.0'
+        classpath 'com.google.gms:google-services:4.3.8'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.0'
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:28.1.0')
+    implementation 'com.google.firebase:firebase-crashlytics-ndk'
+}
+
+android {
+    compileSdkVersion 30
+    
+    defaultConfig {
+        applicationId project.applicationId
+    }
+}
+
+android.buildTypes.all { buildType ->
+    firebaseCrashlytics {
+        nativeSymbolUploadEnabled true
+        unstrippedNativeLibsDir project.unstrippedNativeLibsDir
+        symbolGenerator {
+            breakpad()
+        }
+    }
+}
